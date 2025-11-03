@@ -1,3 +1,5 @@
+// build.gradle.kts (Project: makeitso)
+
 plugins {
     id("com.android.application") version "8.0.0" apply false
     id("com.android.library") version "8.0.0" apply false
@@ -9,8 +11,17 @@ plugins {
     id("com.google.firebase.firebase-perf") version "1.4.2" apply false
 }
 
-tasks {
-    register("clean", Delete::class) {
-        delete(rootProject.buildDir)
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
     }
+    dependencies {
+        classpath("com.google.gms:google-services:4.3.14")
+        classpath("com.google.firebase:perf-plugin:1.4.2")
+    }
+}
+
+tasks.register<Delete>("clean") {
+    delete(rootProject.buildDir)
 }

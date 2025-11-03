@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import com.google.firebase.auth.EmailAuthProvider
+import com.example.makeitso.common.ext.trace
 
 
 class AccountServiceImpl @Inject constructor(private val auth: FirebaseAuth) : AccountService {
@@ -57,17 +58,20 @@ class AccountServiceImpl @Inject constructor(private val auth: FirebaseAuth) : A
     auth.signInAnonymously().await()
   }
 
-  override suspend fun linkAccount(email: String, password: String) {
-    val credential = EmailAuthProvider.getCredential(email, password)
+  override suspend fun linkAccount(email: String, password: String): Unit =
+    trace(LINK_ACCOUNT_TRACE) {
+      val credential = EmailAuthProvider.getCredential(email, password)
 
-    try {
-      // Intenta vincular la cuenta anónima actual con el nuevo correo
-      auth.currentUser!!.linkWithCredential(credential).await()
-    } catch (e: Exception) {
-      // Si falla (por ejemplo, proveedor deshabilitado o conflicto), crea una cuenta normal
-      auth.createUserWithEmailAndPassword(email, password).await()
+      try {
+        // Intenta vincular la cuenta anónima actual con el nuevo correo
+        auth.currentUser!!.linkWithCredential(credential).await()
+      } catch (e: Exception) {
+        // Si falla (por ejemplo, conflicto o proveedor deshabilitado),
+        // crea una nueva cuenta con correo y contraseña
+        auth.createUserWithEmailAndPassword(email, password).await()
+      }
     }
-  }
+
 
 
   override suspend fun deleteAccount() {
