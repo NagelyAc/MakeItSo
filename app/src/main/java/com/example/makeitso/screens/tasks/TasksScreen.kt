@@ -35,11 +35,18 @@ import com.example.makeitso.common.ext.smallSpacer
 import com.example.makeitso.common.ext.toolbarActions
 import com.example.makeitso.model.Task
 import com.example.makeitso.theme.MakeItSoTheme
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+
 
 @Composable
 @ExperimentalMaterialApi
 fun TasksScreen(openScreen: (String) -> Unit, viewModel: TasksViewModel = hiltViewModel()) {
+  val tasks = viewModel
+    .tasks
+    .collectAsStateWithLifecycle(emptyList())
+
   TasksScreenContent(
+    tasks = tasks.value, // 👈 le pasamos las tareas aquí
     onAddClick = viewModel::onAddClick,
     onSettingsClick = viewModel::onSettingsClick,
     onTaskCheckChange = viewModel::onTaskCheckChange,
@@ -50,11 +57,14 @@ fun TasksScreen(openScreen: (String) -> Unit, viewModel: TasksViewModel = hiltVi
   LaunchedEffect(viewModel) { viewModel.loadTaskOptions() }
 }
 
+
+
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 @ExperimentalMaterialApi
 fun TasksScreenContent(
   modifier: Modifier = Modifier,
+  tasks: List<Task>, // 👈 agrega este parámetro
   onAddClick: ((String) -> Unit) -> Unit,
   onSettingsClick: ((String) -> Unit) -> Unit,
   onTaskCheckChange: (Task) -> Unit,
@@ -83,8 +93,9 @@ fun TasksScreenContent(
 
       Spacer(modifier = Modifier.smallSpacer())
 
+      // 👇 Aquí usas la lista que pasaste
       LazyColumn {
-        items(emptyList<Task>(), key = { it.id }) { taskItem ->
+        items(tasks, key = { it.id }) { taskItem ->
           TaskItem(
             task = taskItem,
             options = listOf(),
@@ -97,17 +108,21 @@ fun TasksScreenContent(
   }
 }
 
+
 @Preview(showBackground = true)
 @ExperimentalMaterialApi
 @Composable
+
 fun TasksScreenPreview() {
   MakeItSoTheme {
     TasksScreenContent(
-      onAddClick = {},
-      onSettingsClick = {},
-      onTaskCheckChange = {},
-      onTaskActionClick = { _, _, _ -> },
-      openScreen = {}
+        onAddClick = {},
+        onSettingsClick = {},
+        onTaskCheckChange = {},
+        onTaskActionClick = { _, _, _ -> },
+        openScreen = {},
+        modifier = TODO(),
+        tasks = TODO()
     )
   }
 }

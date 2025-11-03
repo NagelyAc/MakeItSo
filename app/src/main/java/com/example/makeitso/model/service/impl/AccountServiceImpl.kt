@@ -59,8 +59,16 @@ class AccountServiceImpl @Inject constructor(private val auth: FirebaseAuth) : A
 
   override suspend fun linkAccount(email: String, password: String) {
     val credential = EmailAuthProvider.getCredential(email, password)
-    auth.currentUser!!.linkWithCredential(credential).await()
+
+    try {
+      // Intenta vincular la cuenta anónima actual con el nuevo correo
+      auth.currentUser!!.linkWithCredential(credential).await()
+    } catch (e: Exception) {
+      // Si falla (por ejemplo, proveedor deshabilitado o conflicto), crea una cuenta normal
+      auth.createUserWithEmailAndPassword(email, password).await()
+    }
   }
+
 
   override suspend fun deleteAccount() {
     auth.currentUser!!.delete().await()
